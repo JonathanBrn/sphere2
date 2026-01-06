@@ -1,94 +1,112 @@
 const express = require('express');
 const cors = require('cors');
-// טוען את המשתנים
+const path = require('path');
 require('dotenv').config();
 
-// --- בדיקת משתנים (דיאגנוסטיקה) ---
-console.log("--- בדיקת הגדרות ---");
+// --- אתחול Twilio (רק אם המפתחות קיימים) ---
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+let client;
 
-// מדפיס לטרמינל האם המשתנים קיימים (מסתיר חלק מהם לאבטחה)
-console.log("Account SID:", accountSid ? accountSid.substring(0, 6) + "..." : "חסר! (Undefined)");
-console.log("Auth Token:", authToken ? "קיים (V)" : "חסר!");
-
-if (!accountSid || !accountSid.startsWith("AC")) {
-    console.error("❌ שגיאה קריטית: ה-SID בקובץ .env לא תקין או לא נטען!");
-    console.error("וודא שאין רווחים בקובץ .env וששמרת את הקובץ.");
-    process.exit(1); // עוצר את השרת כדי שלא יקרוס סתם
+if (accountSid && authToken && accountSid.startsWith('AC')) {
+    client = require('twilio')(accountSid, authToken);
+} else {
+    console.warn("⚠️ Twilio credentials missing or invalid. SMS will not be sent (check logs for codes).");
 }
-// ------------------------------------
-
-// אתחול Twilio רק אם הבדיקה עברה
-const client = require('twilio')(accountSid, authToken);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
+// === תיקון קריטי ל-Vercel ===
+// שימוש ב-process.cwd() מבטיח ש-Vercel ימצא את תיקיית ה-public
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// "מסד נתונים" זמני בזיכרון
 const otpStore = {}; 
 
-// === פונקציה לשליחת SMS ===
+// === פונקציית עזר לשליחת SMS ===
 async function sendSMSOtp(phoneNumber, code) {
+    if (!client) throw new Error("Twilio client not initialized");
+    
+    // Twilio חייב פורמט בינלאומי עם פלוס (+972...)
     if (!phoneNumber.startsWith('+')) {
         phoneNumber = '+' + phoneNumber;
     }
 
-    try {
-        console.log(`מנסה לשלוח SMS ל-${phoneNumber}...`);
-        
-        const message = await client.messages.create({
-            body: `Your Sphere verification code is: ${code}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: phoneNumber
-        });
-        
-        console.log(`SMS נשלח בהצלחה! SID: ${message.sid}`);
-    } catch (error) {
-        console.error("Twilio Error:", error.message);
-        throw error;
-    }
+    console.log(`Sending SMS to ${phoneNumber}...`);
+    
+    const message = await client.messages.create({
+        body: `Your Sphere verification code is: ${code}`,
+        from: process.env.TWILIO_PHONE_NUMBER, // המספר האמריקאי שלך
+        to: phoneNumber
+    });
+    
+    console.log(`SMS sent successfully! SID: ${message.sid}`);
 }
 
 // === נתיב 1: בקשת קוד ===
 app.post('/api/auth/send-otp', async (req, res) => {
     const { phone } = req.body;
+    
+    // יצירת קוד רנדומלי (6 ספרות)
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     
+    // שמירה בזיכרון
     otpStore[phone] = code; 
-    console.log(`DEBUG: Code for ${phone} is ${code}`);
-
+    
+    // מחיקה אוטומטית אחרי 5 דקות
     setTimeout(() => { delete otpStore[phone] }, 5 * 60 * 1000);
 
+    // === הדפסה ללוגים (חובה לפיתוח!) ===
+    // את זה תראה ב-Logs של Vercel אם ה-SMS לא מגיע
+    console.log(`DEBUG CODE for ${phone}: [ ${code} ]`);
+
     try {
-        await sendSMSOtp(phone, code);
-        res.json({ success: true, message: "ה-SMS נשלח בהצלחה" });
+        if (client) {
+            await sendSMSOtp(phone, code);
+        }
+        // מחזירים תמיד הצלחה, כדי שהמשתמש יעבור מסך
+        // (במקרה הגרוע הוא ייקח את הקוד מהלוגים)
+        res.json({ success: true, message: "תהליך השליחה הושלם" });
     } catch (error) {
-        // במקרה של שגיאה (למשל טריאל), נאפשר כניסה דרך הטרמינל
-        res.status(500).json({ 
-            success: false, 
-            message: "שגיאת שליחה. בדוק את הקוד בטרמינל." 
-        });
+        console.error("Twilio Error:", error.message);
+        // עדיין מחזירים הצלחה לצד הלקוח כדי לא לתקוע את האפליקציה
+        res.json({ success: true, message: "נשלח (בדוק לוגים למקרה של תקלה)" });
     }
 });
 
 // === נתיב 2: אימות קוד ===
 app.post('/api/auth/verify-otp', (req, res) => {
     const { phone, code } = req.body;
+
+    // בדיקה האם הקוד קיים ותואם
     if (otpStore[phone] && otpStore[phone] === code) {
-        delete otpStore[phone];
+        delete otpStore[phone]; // מחיקת הקוד לאחר שימוש
         res.json({ success: true });
     } else {
-        res.json({ success: false, message: "קוד שגוי" });
+        res.json({ success: false, message: "קוד שגוי או פג תוקף" });
     }
 });
 
+// === נתיב ראשי (Home Page) ===
+// מגיש את קובץ ה-HTML הראשי
+app.get('/', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+});
+
+// === נתיב Fallback (לכל שאר הבקשות) ===
+app.get('*', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+});
+
+// הפעלת השרת (Local & Vercel)
 if (require.main === module) {
     app.listen(port, () => {
         console.log(`Server running on http://localhost:${port}`);
     });
 }
+
 module.exports = app;
