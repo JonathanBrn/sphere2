@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requestly - כניסה למערכת</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header קבוע -->
+    <header class="navbar">
+        <div class="logo" onclick="location.reload()"> <!-- לחיצה על הלוגו תחזיר להתחלה -->
+            <img class="logo-img" src="logo1.png" alt="Sphere Logo">
+        </div>
+
+        <div class="hamburger-menu">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- === מסך 0: כניסה (LOGIN) - זה המסך הראשון שרואים === -->
+        <div id="login-screen" class="screen fade-in">
+            <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
+                <i class="fa-solid fa-shield-halved" style="font-size: 3rem; color: #4a90e2; margin-bottom: 15px;"></i>
+                <h2 class="form-title">ברוכים הבאים</h2>
+                <p class="form-subtitle">הזדהות מאובטחת באמצעות וואטסאפ</p>
+            </div>
+
+            <!-- שלב א: הזנת טלפון -->
+            <div id="step-phone">
+                <form class="modern-form" onsubmit="requestOtp(event)">
+                    <div class="form-group">
+                        <label>מספר נייד</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                            <input type="tel" id="user-phone" placeholder="050-1234567" dir="ltr" style="text-align: right;" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        שלח לי קוד אימות <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- שלב ב: הזנת קוד (מוסתר בהתחלה) -->
+            <div id="step-code" class="hidden">
+                <form class="modern-form" onsubmit="verifyOtp(event)">
+                    <div class="form-group">
+                        <label>קוד אימות (נשלח לוואטסאפ)</label>
+                        <input type="text" id="otp-input" placeholder="XXXXXX" inputmode="numeric" class="otp-field" required>
+                    </div>
+                    <button type="submit" class="submit-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        כניסה למערכת <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <span style="color: #4a90e2; cursor: pointer; font-size: 0.9rem;" onclick="location.reload()">
+                            <i class="fa-solid fa-rotate-right"></i> טעות במספר? התחל מחדש
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- === מסך 1: תפריט ראשי (מוסתר בהתחלה - hidden) === -->
+        <div id="main-menu" class="screen hidden">
+            <h1 class="page-title">בחרו את תחום הבקשה שלכם</h1>
+            <div class="grid-menu">
+                
+                <div class="menu-item" onclick="showScreen('entry-permit-screen')">
+                    <div class="icon-circle">
+                        <img src="https://cdn-icons-png.flaticon.com/512/10405/10405462.png" class="img-icon">
+                    </div>
+                    <span class="label">אישורי כניסה</span>
+                </div>
+
+                <div class="menu-item" onclick="alert('טרם פותח')">
+                    <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/679/679720.png" class="img-icon"></div>
+                    <span class="label">ציוד ואספקה</span>
+                </div>
+                
+                <div class="menu-item" onclick="showScreen('maintenance-screen')">
+                    <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2942/2942946.png" class="img-icon"></div>
+                    <span class="label">תחזוקה</span>
+                </div>
+
+                <div class="menu-item" onclick="alert('טרם פותח')">
+                    <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2920/2920349.png" class="img-icon"></div>
+                    <span class="label">IT</span>
+                </div>
+
+                <div class="menu-item disabled">
+                    <div class="badge">בקרוב!</div>
+                    <div class="icon-circle grayscale">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2693/2693507.png" alt="אירועים" class="img-icon">
+                    </div>
+                    <span class="label">אירועים</span>
+                </div>
+
+                <div class="menu-item disabled">
+                    <div class="badge">בקרוב!</div>
+                    <div class="icon-circle grayscale">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" alt="רכבים" class="img-icon">
+                    </div>
+                    <span class="label">רכבים</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- === מסך 2: טופס תחזוקה === -->
+        <div id="maintenance-screen" class="screen hidden">
+            <div class="back-btn" onclick="showScreen('main-menu')">
+                <i class="fa-solid fa-arrow-right"></i> חזרה לתפריט
+            </div>
+            <h2 class="form-title">דיווח תקלת בינוי</h2>
+            <p class="form-subtitle">אנא מלאו את פרטי התקלה במדויק</p>
+            <form class="modern-form" onsubmit="submitForm(event)">
+                <div class="form-group">
+                    <label>סוג התקלה</label>
+                    <div class="select-wrapper">
+                        <select required>
+                            <option value="" disabled selected>בחר נושא...</option>
+                            <option value="air_condition">מיזוג אוויר</option>
+                            <option value="electricity">חשמל</option>
+                            <option value="plumbing">אינסטלציה</option>
+                            <option value="furniture">ריהוט / נגרות</option>
+                            <option value="general">אחזקה כללית</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>פירוט התקלה</label>
+                    <textarea rows="3" placeholder="לדוגמה: המזגן לא עובד בכלל..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>מספר מזגן / נכס <small>(חובה במיזוג)</small></label>
+                    <input type="text" placeholder="לדוגמה: 25267 טדיראן">
+                </div>
+                <div class="form-group">
+                    <label>מיקום התקלה (משרד/חדר)</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" placeholder="לדוגמה: משרד מנהלן" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>אחראי ענפי + שם ענף</label>
+                    <input type="text" placeholder="לדוגמה: ורוניקה לביא, ענף מע&quot;מ">
+                </div>
+                <div class="grid-2-cols">
+                    <div class="form-group">
+                        <label>שם איש קשר</label>
+                        <input type="text" placeholder="שם מלא" required>
+                    </div>
+                    <div class="form-group">
+                        <label>טלפון</label>
+                        <input type="tel" placeholder="050-0000000" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>הערות נוספות</label>
+                    <textarea rows="2" placeholder="הערות למבצע..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">
+                    שלח קריאה <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- === מסך 3: טופס אישור כניסה === -->
+        <div id="entry-permit-screen" class="screen hidden">
+            <div class="back-btn" onclick="showScreen('main-menu')">
+                <i class="fa-solid fa-arrow-right"></i> חזרה לתפריט
+            </div>
+            <h2 class="form-title">בקשת אישור כניסה</h2>
+            <p class="form-subtitle">מלאו את פרטי המבקר לצורך קבלת אישור</p>
+            <form class="modern-form" onsubmit="submitForm(event)">
+                <div class="form-group">
+                    <label>שם מלא</label>
+                    <div class="input-with-icon">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" placeholder="שם פרטי ושם משפחה" required>
+                    </div>
+                </div>
+                <div class="grid-2-cols">
+                    <div class="form-group">
+                        <label>מס' אישי / ת.ז</label>
+                        <input type="tel" placeholder="מספר זיהוי" required>
+                    </div>
+                    <div class="form-group">
+                        <label>טלפון נייד</label>
+                        <input type="tel" placeholder="050..." required>
+                    </div>
+                </div>
+                <div class="grid-2-cols">
+                    <div class="form-group">
+                        <label>סטטוס</label>
+                        <div class="select-wrapper">
+                            <select required>
+                                <option value="" disabled selected>בחר...</option>
+                                <option value="soldier">איש צבא</option>
+                                <option value="civilian">אזרח עובד צה"ל</option>
+                                <option value="contractor">קבלן / ספק</option>
+                                <option value="guest">אזרח / אורח</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>סיווג בטחוני</label>
+                        <div class="select-wrapper">
+                            <select required>
+                                <option value="" disabled selected>בחר...</option>
+                                <option value="none">בלמ"ס</option>
+                                <option value="shamor">שמור</option>
+                                <option value="sodi">סודי</option>
+                                <option value="top_secret">סודי ביותר</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2-cols">
+                    <div class="form-group">
+                        <label>מספר רכב</label>
+                        <input type="text" placeholder="אם קיים">
+                    </div>
+                    <div class="form-group">
+                        <label>צבע רכב</label>
+                        <input type="text" placeholder="לדוגמה: לבן">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>מטרת הביקור</label>
+                    <textarea rows="2" placeholder="פירוט סיבת הכניסה..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>טווח תאריכים מבוקש</label>
+                    <div class="grid-2-cols">
+                        <div class="input-with-icon">
+                            <input type="text" onfocus="(this.type='date')" placeholder="מתאריך">
+                        </div>
+                        <div class="input-with-icon">
+                            <input type="text" onfocus="(this.type='date')" placeholder="עד תאריך">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    שלח בקשת כניסה <i class="fa-solid fa-check"></i>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- JavaScript - לוגיקה -->
+    <script>
+        // משתנה לשמירת הטלפון הזמני בזמן המעבר בין שלבים
+        let currentPhone = '';
+
+        // ניווט בין מסכים
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('fade-in'));
+            
+            const screen = document.getElementById(screenId);
+            screen.classList.remove('hidden');
+            
+            setTimeout(() => { screen.classList.add('fade-in'); }, 10);
+            window.scrollTo(0,0);
+        }
+
+        // --- לוגיקה: בקשת קוד (Step 1) ---
+        async function requestOtp(e) {
+            e.preventDefault();
+            const phoneInput = document.getElementById('user-phone').value;
+            const btn = e.target.querySelector('button');
+            const originalBtnText = btn.innerHTML;
+
+            // ניקוי המספר: רק ספרות
+            let cleanPhone = phoneInput.replace(/\D/g, ''); 
+            
+            // המרת 050 ל-97250
+            if (cleanPhone.startsWith('0')) {
+                cleanPhone = '972' + cleanPhone.substring(1);
+            }
+
+            currentPhone = cleanPhone;
+
+            // שינוי כפתור ל"שולח..."
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> שולח...';
+            btn.disabled = true;
+
+            try {
+                // שליחה לשרת (שכתבנו ב-index.js)
+                const response = await fetch('/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: cleanPhone })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // הצלחה: מעבר לשלב ב' (הזנת קוד)
+                    document.getElementById('step-phone').classList.add('hidden');
+                    document.getElementById('step-code').classList.remove('hidden');
+                } else {
+                    alert('שגיאה: ' + (result.message || 'תקלה בשליחה'));
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('תקלת תקשורת מול השרת');
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        // --- לוגיקה: אימות קוד (Step 2) ---
+        async function verifyOtp(e) {
+            e.preventDefault();
+            const code = document.getElementById('otp-input').value;
+            const btn = e.target.querySelector('button');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> בודק...';
+
+            try {
+                const response = await fetch('/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: currentPhone, code: code })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // אימות הצליח! מעבר למסך הראשי
+                    showScreen('main-menu');
+                } else {
+                    alert('קוד שגוי, נסה שוב');
+                    btn.disabled = false;
+                    btn.innerHTML = 'כניסה למערכת <i class="fa-solid fa-arrow-left"></i>';
+                }
+            } catch (error) {
+                console.error(error);
+                alert('שגיאה באימות');
+                btn.disabled = false;
+            }
+        }
+
+        // פונקציית דמו לשליחת טפסים פנימיים
+        function submitForm(e) {
+            e.preventDefault();
+            alert("הטופס נשלח בהצלחה! (דמו)");
+            showScreen('main-menu');
+        }
+    </script>
+</body>
+</html>

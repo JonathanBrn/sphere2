@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requestly - דיווח תקלה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header קבוע לכל האפליקציה -->
+    <header class="navbar">
+        <!-- הזזנו את הלוגו להתחלה (ב-RTL הוא יופיע מימין) -->
+        <div class="logo" onclick="showScreen('main-menu')">
+            <img class="logo-suffix" src="public/logo1.png">
+        </div>
+
+        <!-- הזזנו את ההמבורגר לסוף (ב-RTL הוא יופיע משמאל) -->
+        <div class="hamburger-menu">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- === מסך 1: תפריט ראשי === -->
+        <div id="main-menu" class="screen fade-in">
+            <h1 class="page-title">בחרו את תחום הבקשה שלכם</h1>
+            <div class="grid-menu">
+                <!-- פריט 1: אישורי כניסה (מעודכן) -->
+                <div class="menu-item" onclick="showScreen('entry-permit-screen')">
+                    <div class="icon-circle">
+                        <img src="https://cdn-icons-png.flaticon.com/512/10405/10405462.png" class="img-icon">
+                    </div>
+                    <span class="label">אישורי כניסה</span>
+                </div>
+                <div class="menu-item" onclick="alert('טרם פותח')">
+                    <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/679/679720.png" class="img-icon"></div>
+                    <span class="label">ציוד ואספקה</span>
+                </div>
+                
+                <!-- זה הכפתור הפעיל שמעביר למסך התחזוקה -->
+                <div class="menu-item" onclick="showScreen('maintenance-screen')">
+                    <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2942/2942946.png" class="img-icon"></div>
+                    <span class="label">תחזוקה</span>
+                </div>
+
+                <div class="menu-item" onclick="alert('טרם פותח')">
+                    <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2920/2920349.png" class="img-icon"></div>
+                    <span class="label">IT</span>
+                </div>
+                            <!-- פריט 5: אירועים (עם תווית בקרוב) -->
+            <div class="menu-item disabled">
+                <div class="badge">בקרוב!</div>
+                <div class="icon-circle grayscale">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2693/2693507.png" alt="אירועים" class="img-icon">
+                </div>
+                <span class="label">אירועים</span>
+            </div>
+
+            <!-- פריט 6: רכבים (עם תווית בקרוב) -->
+            <div class="menu-item disabled">
+                <div class="badge">בקרוב!</div>
+                <div class="icon-circle grayscale">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3202/3202926.png" alt="רכבים" class="img-icon">
+                </div>
+                <span class="label">רכבים</span>
+            </div>
+            </div>
+        </div>
+
+        <!-- === מסך 2: טופס תחזוקה === -->
+        <div id="maintenance-screen" class="screen hidden">
+            
+            <!-- כפתור חזרה -->
+            <div class="back-btn" onclick="showScreen('main-menu')">
+                <i class="fa-solid fa-arrow-right"></i> חזרה לתפריט
+            </div>
+
+            <h2 class="form-title">דיווח תקלת בינוי</h2>
+            <p class="form-subtitle">אנא מלאו את פרטי התקלה במדויק</p>
+
+            <form class="modern-form" onsubmit="submitForm(event)">
+                
+                <!-- סוג התקלה -->
+                <div class="form-group">
+                    <label>סוג התקלה</label>
+                    <div class="select-wrapper">
+                        <select required>
+                            <option value="" disabled selected>בחר נושא...</option>
+                            <option value="air_condition">מיזוג אוויר</option>
+                            <option value="electricity">חשמל</option>
+                            <option value="plumbing">אינסטלציה</option>
+                            <option value="furniture">ריהוט / נגרות</option>
+                            <option value="general">אחזקה כללית</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- פירוט התקלה -->
+                <div class="form-group">
+                    <label>פירוט התקלה</label>
+                    <textarea rows="3" placeholder="לדוגמה: המזגן לא עובד בכלל..." required></textarea>
+                </div>
+
+                <!-- מספר מזגן / נכס -->
+                <div class="form-group">
+                    <label>מספר מזגן / נכס <small>(חובה במיזוג)</small></label>
+                    <input type="text" placeholder="לדוגמה: 25267 טדיראן">
+                </div>
+
+                <!-- מיקום -->
+                <div class="form-group">
+                    <label>מיקום התקלה (משרד/חדר)</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" placeholder="לדוגמה: משרד מנהלן" required>
+                    </div>
+                </div>
+
+                <!-- אחראי ענפי -->
+                <div class="form-group">
+                    <label>אחראי ענפי + שם ענף</label>
+                    <input type="text" placeholder="לדוגמה: ורוניקה לביא, ענף מע&quot;מ">
+                </div>
+
+                <!-- איש קשר -->
+                <div class="grid-2-cols">
+                    <div class="form-group">
+                        <label>שם איש קשר</label>
+                        <input type="text" placeholder="שם מלא" required>
+                    </div>
+                    <div class="form-group">
+                        <label>טלפון</label>
+                        <input type="tel" placeholder="050-0000000" required>
+                    </div>
+                </div>
+
+                <!-- הערות -->
+                <div class="form-group">
+                    <label>הערות נוספות</label>
+                    <textarea rows="2" placeholder="הערות למבצע..."></textarea>
+                </div>
+
+                <!-- כפתור שליחה -->
+                <button type="submit" class="submit-btn">
+                    שלח קריאה <i class="fa-solid fa-paper-plane"></i>
+                </button>
+
+            </form>
+        </div>
+        <!-- === מסך 3: טופס אישור כניסה === -->
+<div id="entry-permit-screen" class="screen hidden">
+    
+    <!-- כפתור חזרה -->
+    <div class="back-btn" onclick="showScreen('main-menu')">
+        <i class="fa-solid fa-arrow-right"></i> חזרה לתפריט
+    </div>
+
+    <h2 class="form-title">בקשת אישור כניסה</h2>
+    <p class="form-subtitle">מלאו את פרטי המבקר לצורך קבלת אישור</p>
+
+    <form class="modern-form" onsubmit="submitForm(event)">
+        
+        <!-- שם מלא -->
+        <div class="form-group">
+            <label>שם מלא</label>
+            <div class="input-with-icon">
+                <i class="fa-regular fa-user"></i>
+                <input type="text" placeholder="שם פרטי ושם משפחה" required>
+            </div>
+        </div>
+
+        <!-- ת.ז וטלפון (בשורה אחת) -->
+        <div class="grid-2-cols">
+            <div class="form-group">
+                <label>מס' אישי / ת.ז</label>
+                <input type="tel" placeholder="מספר זיהוי" required>
+            </div>
+            <div class="form-group">
+                <label>טלפון נייד</label>
+                <input type="tel" placeholder="050..." required>
+            </div>
+        </div>
+
+        <!-- סוג אדם וסיווג (בשורה אחת) -->
+        <div class="grid-2-cols">
+            <div class="form-group">
+                <label>סטטוס</label>
+                <div class="select-wrapper">
+                    <select required>
+                        <option value="" disabled selected>בחר...</option>
+                        <option value="soldier">איש צבא</option>
+                        <option value="civilian">אזרח עובד צה"ל</option>
+                        <option value="contractor">קבלן / ספק</option>
+                        <option value="guest">אזרח / אורח</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>סיווג בטחוני</label>
+                <div class="select-wrapper">
+                    <select required>
+                        <option value="" disabled selected>בחר...</option>
+                        <option value="none">בלמ"ס</option>
+                        <option value="shamor">שמור</option>
+                        <option value="sodi">סודי</option>
+                        <option value="top_secret">סודי ביותר</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- פרטי רכב (מספר וצבע) -->
+        <div class="grid-2-cols">
+            <div class="form-group">
+                <label>מספר רכב</label>
+                <input type="text" placeholder="אם קיים">
+            </div>
+            <div class="form-group">
+                <label>צבע רכב</label>
+                <input type="text" placeholder="לדוגמה: לבן">
+            </div>
+        </div>
+
+        <!-- מטרה -->
+        <div class="form-group">
+            <label>מטרת הביקור</label>
+            <textarea rows="2" placeholder="פירוט סיבת הכניסה..." required></textarea>
+        </div>
+
+        <!-- טווח תאריכים -->
+        <div class="form-group">
+            <label>טווח תאריכים מבוקש</label>
+            <div class="grid-2-cols">
+                <div class="input-with-icon">
+                    <input type="text" onfocus="(this.type='date')" placeholder="מתאריך">
+                </div>
+                <div class="input-with-icon">
+                    <input type="text" onfocus="(this.type='date')" placeholder="עד תאריך">
+                </div>
+            </div>
+        </div>
+
+        <!-- כפתור שליחה -->
+        <button type="submit" class="submit-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            שלח בקשת כניסה <i class="fa-solid fa-check"></i>
+        </button>
+
+    </form>
+</div>
+    </main>
+
+    <!-- JavaScript לניווט -->
+    <script>
+        function showScreen(screenId) {
+            // הסתר את כל המסכים
+            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('fade-in'));
+            
+            // הצג את המסך הרצוי
+            const screen = document.getElementById(screenId);
+            screen.classList.remove('hidden');
+            
+            // טריק קטן לאתחול האנימציה
+            setTimeout(() => {
+                screen.classList.add('fade-in');
+            }, 10);
+            
+            // גלילה למעלה
+            window.scrollTo(0,0);
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            alert("הטופס נשלח בהצלחה! (דמו)");
+            showScreen('main-menu');
+        }
+    </script>
+</body>
+</html>
