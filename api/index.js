@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const { kv } = require('@vercel/kv');
@@ -41,6 +42,15 @@ app.use(cors());
 app.use(express.json());
 
 /* =========================
+   🔥 GUI – חיבור תיקיית public
+========================= */
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+/* =========================
    Helpers
 ========================= */
 function normalizePhone(phone) {
@@ -67,7 +77,6 @@ app.post('/api/auth/send-otp', async (req, res) => {
     const normalizedPhone = normalizePhone(phone);
     const code = generateOtp();
 
-    // שמירה ב-KV ל-5 דקות
     await kv.set(`otp:${normalizedPhone}`, code, { ex: 300 });
 
     await twilioClient.messages.create({
@@ -76,16 +85,10 @@ app.post('/api/auth/send-otp', async (req, res) => {
       to: normalizedPhone
     });
 
-    return res.json({
-      success: true,
-      message: 'קוד נשלח בהצלחה'
-    });
+    return res.json({ success: true });
   } catch (err) {
-    console.error('Send OTP Error:', err.message);
-    return res.status(500).json({
-      success: false,
-      message: 'שגיאה בשליחת SMS'
-    });
+    console.error(err);
+    return res.status(500).json({ success: false });
   }
 });
 
@@ -93,53 +96,24 @@ app.post('/api/auth/send-otp', async (req, res) => {
    Verify OTP
 ========================= */
 app.post('/api/auth/verify-otp', async (req, res) => {
-  try {
-    const { phone, code } = req.body;
+  const { phone, code } = req.body;
 
-    if (!phone || !code) {
-      return res.status(400).json({
-        success: false,
-        message: 'חסר טלפון או קוד'
-      });
-    }
+  const normalizedPhone = normalizePhone(phone);
+  const storedCode = await kv.get(`otp:${normalizedPhone}`);
 
-    const normalizedPhone = normalizePhone(phone);
-    const storedCode = await kv.get(`otp:${normalizedPhone}`);
-
-    if (!storedCode) {
-      return res.json({
-        success: false,
-        message: 'קוד פג תוקף או לא קיים'
-      });
-    }
-
-    if (storedCode !== code) {
-      return res.json({
-        success: false,
-        message: 'קוד שגוי'
-      });
-    }
-
-    // מחיקה אחרי אימות
-    await kv.del(`otp:${normalizedPhone}`);
-
-    return res.json({ success: true });
-  } catch (err) {
-    console.error('Verify OTP Error:', err.message);
-    return res.status(500).json({
-      success: false,
-      message: 'שגיאה באימות'
-    });
+  if (storedCode !== code) {
+    return res.json({ success: false });
   }
+
+  await kv.del(`otp:${normalizedPhone}`);
+  return res.json({ success: true });
 });
 
 /* =========================
-   Export ל-Vercel
+   GET לבדיקה בדפדפן
 ========================= */
-module.exports = app;
-
-// בדיקת חיים בדפדפן
 app.get('/api/auth/send-otp', (req, res) => {
   res.send('OK – use POST to send OTP');
 });
 
+module.exports = app;
