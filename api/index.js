@@ -137,3 +137,9 @@ app.post('/api/auth/verify-otp', async (req, res) => {
    Export ל-Vercel
 ========================= */
 module.exports = app;
+
+// בדיקת חיים בדפדפן
+app.get('/api/auth/send-otp', (req, res) => {
+  res.send('OK – use POST to send OTP');
+});
+
